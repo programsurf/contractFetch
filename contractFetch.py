@@ -22,7 +22,7 @@ DELAY = 2.0
 
 def setup_driver():
     chrome_options = Options()
-    chrome_options.add_argument('--headless')  # GUI 없이 실행
+    chrome_options.add_argument('--headless') 
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-gpu')
@@ -51,7 +51,6 @@ def scrape_verified_contracts(start_page=1, max_pages=1):
             for link in links:
                 href = link.get_attribute('href')
                 if href and 'address' in href:
-                    # #code 부분 제거
                     addr = href.split('/address/')[-1].split('#')[0]
                     if addr.startswith('0x'):
                         addresses.append(addr)
@@ -68,19 +67,16 @@ def scrape_verified_contracts(start_page=1, max_pages=1):
     return addresses
 
 def is_solidity_code(source_code):
-    # JSON 형식인지 체크
     try:
         json.loads(source_code)
         return False
     except json.JSONDecodeError:
-        # pragma solidity나 contract 키워드가 있는지 확인
         return 'pragma solidity' in source_code or 'contract' in source_code
 
 def clean_source_code(source_code):
     lines = source_code.splitlines()
     cleaned_lines = []
     
-    # 첫 24줄을 검사하여 "숫자 + 공백"으로 시작하는 패턴 확인
     pattern_lines = 0
     for i in range(min(24, len(lines))):
         line = lines[i].strip()
@@ -88,18 +84,15 @@ def clean_source_code(source_code):
         if line and line.split()[0].isdigit():
             pattern_lines += 1
     
-    has_line_numbers = pattern_lines >= 20  # 24줄 중 20줄 이상이 패턴과 일치하면
+    has_line_numbers = pattern_lines >= 20 
     
     for line in lines:
         if has_line_numbers:
-            # 줄의 첫 부분이 숫자인 경우
             parts = line.strip().split(maxsplit=1)
             if parts and parts[0].isdigit():
-                # 숫자 다음 부분만 가져오기
                 if len(parts) > 1:
                     cleaned_lines.append(parts[1])
             else:
-                # 숫자로 시작하지 않는 줄은 그대로 유지
                 if line.strip():
                     cleaned_lines.append(line)
         else:
@@ -123,7 +116,6 @@ def get_source_code(address):
             
             source_code = source_element.text
             
-            # 줄 번호 제거
             source_code = clean_source_code(source_code)
             
             if not is_solidity_code(source_code):
@@ -164,10 +156,9 @@ def get_source_code(address):
 def main():
    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
    
-   # sol 파일을 저장할 디렉토리 생성
    sol_dir = f"contracts_{timestamp}"
    os.makedirs(sol_dir, exist_ok=True)
-   os.chdir(sol_dir)  # sol 파일을 저장할 디렉토리로 이동
+   os.chdir(sol_dir) 
    
    csv_filename = f"VerifiedContractsSource-{timestamp}.csv"
 
